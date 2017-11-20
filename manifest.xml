@@ -1,0 +1,17 @@
+<package>
+  <description brief="Detect hazards/obstacles in distance frames">
+  This package can be used to detect rocks or similar obstacles in a provided distance frame of a stereo camera.
+  </description>
+  <author>Levin Gerdes/levin.gerdes@esa.int</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+  <depend package="base/cmake" />
+  <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+  -->
+</package>
