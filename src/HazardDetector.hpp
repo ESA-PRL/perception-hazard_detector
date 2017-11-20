@@ -13,7 +13,7 @@ class HazardDetector
 public:
     HazardDetector(const Config& config = Config());
 
-    int analyze(std::vector<uint8_t> image);
+    bool analyze(std::vector<uint8_t> image);
 
 private:
     Config config;

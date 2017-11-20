@@ -4,14 +4,14 @@
 namespace hazard_detector
 {
 
-HazardDetector::HazardDetector(const Config& nConfig)
-    : config(nConfig)
-{
-}
+    HazardDetector::HazardDetector(const Config& nConfig)
+        : config(nConfig)
+    {
+    }
 
-bool HazardDetector::analyze(std::vector<uint8_t> image)
-{
-    return false;
-}
+    bool HazardDetector::analyze(std::vector<uint8_t> image)
+    {
+        return false;
+    }
 
 }
