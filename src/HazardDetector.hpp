@@ -4,6 +4,7 @@
 #include <hazard_detector/Config.hpp>
 #include <vector>
 #include <stdint.h> // for uint8_t
+#include <opencv2/opencv.hpp>
 
 namespace hazard_detector
 {

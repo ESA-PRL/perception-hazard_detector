@@ -13,7 +13,6 @@ namespace hazard_detector
     {
         std::pair< bool, std::vector<uint8_t> > res;
 
-        for (int i = 0; i < distaImage;
         std::cout << "dist image " << distImage.size() << std::endl;
         std::cout << "vis. image " << visualImage.size() << std::endl;
 
