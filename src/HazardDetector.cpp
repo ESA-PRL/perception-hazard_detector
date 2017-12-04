@@ -9,9 +9,17 @@ namespace hazard_detector
     {
     }
 
-    bool HazardDetector::analyze(std::vector<uint8_t> image)
+    std::pair< bool, std::vector<uint8_t> > HazardDetector::analyze(std::vector<float> distImage, std::vector<uint8_t> visualImage)
     {
-        return false;
-    }
+        std::pair< bool, std::vector<uint8_t> > res;
 
+        for (int i = 0; i < distaImage;
+        std::cout << "dist image " << distImage.size() << std::endl;
+        std::cout << "vis. image " << visualImage.size() << std::endl;
+
+        res.first = true;
+        res.second = visualImage;
+
+        return res;
+    }
 }
