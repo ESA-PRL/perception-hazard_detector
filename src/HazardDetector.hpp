@@ -3,22 +3,27 @@
 
 #include <hazard_detector/Config.hpp>
 #include <vector>
-#include <stdint.h> // for uint8_t
+#include <stdint.h>
 #include <opencv2/opencv.hpp>
 
 namespace hazard_detector
 {
 
-class HazardDetector
-{
-public:
-    HazardDetector(const Config& config = Config());
+    class HazardDetector
+    {
+        public:
+            HazardDetector(const Config& config = Config());
 
-    std::pair< bool, std::vector<uint8_t> > analyze(std::vector<float> distImage, std::vector<uint8_t> visualImage);
+            bool analyze
+                (
+                    std::vector<float> &distImage,
+                    std::pair<uint16_t,uint16_t> distDims,
+                    cv::Mat &visualImage
+                );
 
-private:
-    Config config;
-};
+        private:
+            Config config;
+    };
 
 }
 
