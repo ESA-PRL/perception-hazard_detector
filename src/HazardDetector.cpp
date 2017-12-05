@@ -3,7 +3,6 @@
 
 namespace hazard_detector
 {
-
     HazardDetector::HazardDetector(const Config& nConfig)
         : config(nConfig)
     {
@@ -23,13 +22,25 @@ namespace hazard_detector
         {
             for (int j=0; j < visualImage.cols && j < distWidth; j++)
             {
-                if (distImage[i*distWidth + j] < 1.5)
+                // mark everything under consideration green
+                if (!std::isnan(calibration[i][j]))
+                {
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 255;
+                }
+                // mark objects/pixels which are Xcm closer than calibration
+                if (distImage[i*distWidth + j] < (calibration[i][j] - 0.2))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 255;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 0;
                 }
             }
         }
 
         return true;
+    }
+
+    void HazardDetector::setCalibration( std::vector< std::vector<float> > calibration )
+    {
+        this->calibration = calibration;
     }
 }

@@ -21,8 +21,11 @@ namespace hazard_detector
                     cv::Mat &visualImage
                 );
 
+            void setCalibration( std::vector< std::vector<float> > calibration );
+
         private:
             Config config;
+            std::vector< std::vector<float> > calibration;
     };
 
 }
