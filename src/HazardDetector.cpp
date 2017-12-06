@@ -13,7 +13,7 @@ namespace hazard_detector
         int cn = visualImage.channels();
         uint8_t* pixelPtr = (uint8_t*)visualImage.data;
 
-        std::pair< bool, cv::Mat > res;
+        int hazardPixels = 0;
 
         //const uint16_t distHeight = distDims.first;
         const uint16_t distWidth  = distDims.second;
@@ -32,11 +32,17 @@ namespace hazard_detector
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 255;
                     pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 0;
+
+                    hazardPixels++;
                 }
             }
         }
 
-        return true;
+        // spurious hazard?
+        if (hazardPixels >= config.hazardPixelLimit)
+            return true;
+
+        return false;
     }
 
     void HazardDetector::setCalibration( std::vector< std::vector<float> > calibration )

@@ -24,12 +24,13 @@ namespace hazard_detector
 
     struct Config
     {
-        double tolerance; // [m]
-        Mask mask; // area of interest
+        double tolerance = 0.4; // [m]
+        Mask mask;              // area of interest
+        int hazardPixelLimit = 20;  // if less than this many pixels
+                                    // are considered hazardous, we consider them spurious
 
         Config()
             :
-            tolerance(0.4),
             mask(50,950,350,750)
         {
         }
