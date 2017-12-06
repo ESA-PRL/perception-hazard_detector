@@ -2,6 +2,7 @@
 #define _HAZARD_DETECTOR_CONFIG_HPP_
 
 #include <stdint.h> // for uint8_t
+#include <string>
 
 namespace hazard_detector
 {
@@ -28,6 +29,9 @@ namespace hazard_detector
         Mask mask;              // area of interest
         int hazardPixelLimit = 20;  // if less than this many pixels
                                     // are considered hazardous, we consider them spurious
+        std::string calibrationPath;
+        bool newCalibration = false;
+        int numCalibrationSamples = 20;
 
         Config()
             :
