@@ -5,13 +5,32 @@
 
 namespace hazard_detector
 {
+    struct Mask
+    {
+        int minX;
+        int maxX;
+        int minY;
+        int maxY;
+
+        // choose values of -1 to select min/max derived from image
+        Mask(int minX, int maxX, int minY, int maxY)
+        {
+            this->minX = minX; // x=0 is on the left
+            this->maxX = maxX;
+            this->minY = minY; // y=0 is in the top
+            this->maxY = maxY;
+        }
+    };
+
     struct Config
     {
-        double maxObstacleHeight; // [m]
+        double tolerance; // [m]
+        Mask mask; // area of interest
 
         Config()
             :
-            maxObstacleHeight(0.4)
+            tolerance(0.4),
+            mask(50,950,350,750)
         {
         }
     };
