@@ -4,6 +4,10 @@
 #include <hazard_detector/Config.hpp>
 #include <vector>
 #include <stdint.h>
+#include <sstream>
+#include <string>
+#include <iostream>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 
 namespace hazard_detector
@@ -21,11 +25,14 @@ namespace hazard_detector
                     cv::Mat &visualImage
                 );
 
-            void setCalibration( std::vector< std::vector<float> > calibration );
+            bool setCalibration( std::vector< std::vector<float> > calibration );
+            bool readCalibrationFile( std::string path );
+            bool saveCalibrationFile( std::string path );
 
         private:
             Config config;
             std::vector< std::vector<float> > calibration;
+            bool calculateMask();
     };
 
 }

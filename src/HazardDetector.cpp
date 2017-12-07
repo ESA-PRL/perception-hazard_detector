@@ -45,14 +45,64 @@ namespace hazard_detector
         return false;
     }
 
-    void HazardDetector::setCalibration( std::vector< std::vector<float> > calibration )
+    bool HazardDetector::setCalibration( std::vector< std::vector<float> > calibration )
     {
         this->calibration = calibration;
+        return calculateMask();
+    }
+
+    bool HazardDetector::readCalibrationFile( std::string path )
+    {
+        std::ifstream file(path);
+
+        std::string line;
+        while( std::getline(file, line) )
+        {
+            std::stringstream linestream(line);
+            std::string entry;
+            std::vector< float > rowData;
+            while( std::getline(linestream, entry, ',') )
+            {
+                rowData.push_back(std::stof(entry));
+            }
+            calibration.push_back(rowData);
+        }
+        file.close();
+
+        return calculateMask();
+    }
+
+    bool HazardDetector::calculateMask()
+    {
+        if (calibration.size() == 0 || calibration[0].size() == 0)
+            return false;
 
         // if config.mask.* == -1, derive min/max from the distance image/calibration
-        config.mask.maxX = config.mask.maxX == -1 ? (int)(calibration[0].size()) : config.mask.maxX;
-        config.mask.maxY = config.mask.maxY == -1 ? (int)(calibration.size())    : config.mask.maxY;
+        config.mask.maxX = config.mask.maxX < 0 ? (int)(calibration[0].size()) : config.mask.maxX;
+        config.mask.maxY = config.mask.maxY < 0 ? (int)(calibration.size())    : config.mask.maxY;
         config.mask.minX = std::max(config.mask.minX, 0);
         config.mask.minY = std::max(config.mask.minY, 0);
+
+        return true;
+    }
+
+    bool HazardDetector::saveCalibrationFile( std::string path )
+    {
+        std::ofstream file(path);
+        if (!file)
+            return false;
+
+        for (unsigned int i=0; i < calibration.size(); i++)
+        {
+            for (unsigned int j=0; j < calibration[0].size(); j++)
+            {
+                file << calibration[i][j] << ",";
+            }
+            file << std::endl;
+        }
+        file.flush();
+        file.close();
+
+        return true;
     }
 }
