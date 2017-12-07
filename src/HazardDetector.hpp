@@ -28,11 +28,13 @@ namespace hazard_detector
             bool setCalibration( std::vector< std::vector<float> > calibration );
             bool readCalibrationFile( std::string path );
             bool saveCalibrationFile( std::string path );
+            bool isCalibrated();
 
         private:
             Config config;
             std::vector< std::vector<float> > calibration;
             bool calculateMask();
+            bool calibrated;
     };
 
 }

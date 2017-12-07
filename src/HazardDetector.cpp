@@ -4,7 +4,7 @@
 namespace hazard_detector
 {
     HazardDetector::HazardDetector(const Config& nConfig)
-        : config(nConfig)
+        : config(nConfig), calibrated(false)
     {
     }
 
@@ -83,6 +83,8 @@ namespace hazard_detector
         config.mask.minX = std::max(config.mask.minX, 0);
         config.mask.minY = std::max(config.mask.minY, 0);
 
+        calibrated = true;
+
         return true;
     }
 
@@ -104,5 +106,10 @@ namespace hazard_detector
         file.close();
 
         return true;
+    }
+
+    bool HazardDetector::isCalibrated()
+    {
+        return calibrated;
     }
 }
