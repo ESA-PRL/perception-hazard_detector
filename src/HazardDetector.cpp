@@ -22,16 +22,25 @@ namespace hazard_detector
         {
             for (int j=config.mask.minX; j < visualImage.cols && j < config.mask.maxX; j++)
             {
+                int origGreenValue = pixelPtr[i*visualImage.cols*cn + j*cn + 1];
                 // mark everything under consideration green
                 if (!std::isnan(calibration[i][j]))
                 {
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 255;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 180;
                 }
+
                 // mark objects/pixels which are Xcm closer than calibration
                 if (distImage[i*distWidth + j] < (calibration[i][j] - config.tolerance))
                 {
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 255;
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 0;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 180;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = origGreenValue;
+
+                    hazardPixels++;
+                }
+                // mark objects/pixels which are Xcm further away than calibration
+                if (distImage[i*distWidth + j] > (calibration[i][j] + config.tolerance))
+                {
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 2] = 180;
 
                     hazardPixels++;
                 }
