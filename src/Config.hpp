@@ -25,13 +25,13 @@ namespace hazard_detector
 
     struct Config
     {
-        double tolerance = 0.4; // [m]
+        double tolerance;       // [m]
         Mask mask;              // area of interest
-        int hazardPixelLimit = 20;  // if less than this many pixels
-                                    // are considered hazardous, we consider them spurious
+        int hazardPixelLimit;   // if less than this many pixels
+                                // are considered hazardous, we consider them spurious
         std::string calibrationPath;
-        bool newCalibration = false;
-        int numCalibrationSamples = 20;
+        bool newCalibration;
+        int numCalibrationSamples;
 
         Config()
             :
