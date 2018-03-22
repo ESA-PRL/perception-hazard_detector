@@ -5,7 +5,7 @@ services:
     - docker
 
 before_install:
-    - docker pull gerdes/rock:compiled
+    - docker pull gerdes/rock
 
 script:
-    - docker run -it gerdes/rock:compiled bash -c ". env.sh && aup perception/hazard_detector && amake perception/hazard_detector"
+    - docker run -it gerdes/rock bash -c ". env.sh && aup perception/hazard_detector && amake perception/hazard_detector"
