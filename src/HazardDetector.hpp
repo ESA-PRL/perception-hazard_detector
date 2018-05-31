@@ -9,10 +9,10 @@
 #include <iostream>
 #include <fstream>
 #include <opencv2/opencv.hpp>
+#include <cmath>
 
 namespace hazard_detector
 {
-
     class HazardDetector
     {
         public:
@@ -29,12 +29,19 @@ namespace hazard_detector
             bool readCalibrationFile( std::string path );
             bool saveCalibrationFile( std::string path );
             bool isCalibrated();
+            const std::vector<uint8_t> &getTraversabilityMap();
+            int getTravMapDims();
+
+            uint8_t HAZARD;
+            uint8_t TRAVERSABLE;
 
         private:
             Config config;
             std::vector< std::vector<float> > calibration;
             bool calculateMask();
             bool calibrated;
+            std::vector<uint8_t> trav_map;
+            bool registerHazard(int,int);
     };
 
 }

@@ -3,6 +3,7 @@
 
 #include <stdint.h> // for uint8_t
 #include <string>
+#include <vector>
 
 namespace hazard_detector
 {
@@ -23,6 +24,29 @@ namespace hazard_detector
         }
     };
 
+    struct TraversabilityMap
+    {
+        double size; // length of one side of the square trav. map [m]
+        double resolution; // [m^2/cell]
+
+        TraversabilityMap(double size, double resolution)
+        {
+            this->resolution = resolution;
+            this->size = size;
+        }
+
+        int dims()
+        {
+            int ret = (int)(size/resolution);
+            if (ret % 2 == 0)
+            {
+                ret += 1;
+                size = ret * resolution;
+            }
+            return ret;
+        }
+    };
+
     struct Config
     {
         double tolerance;       // [m]
@@ -33,9 +57,25 @@ namespace hazard_detector
         bool newCalibration;
         int numCalibrationSamples;
 
+        TraversabilityMap trav_map;
+
+        /**
+         * Distances from the rover's frame to the
+         * left/right/bottom/upper edge of the
+         * region of interest in meters.
+         *
+         * These values are needed to create a
+         * traversability map.
+         */
+        double dist_to_left_edge;
+        double dist_to_right_edge;
+        double dist_to_bottom_edge;
+        double dist_to_upper_edge;
+
         Config()
             :
-            mask(50,950,350,750)
+            mask(50,950,350,750),
+            trav_map(5,0.1)
         {
         }
     };

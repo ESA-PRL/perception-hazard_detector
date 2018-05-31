@@ -6,6 +6,10 @@ namespace hazard_detector
     HazardDetector::HazardDetector(const Config& nConfig)
         : config(nConfig), calibrated(false)
     {
+        HAZARD = 1;
+        TRAVERSABLE = 0;
+
+        trav_map.resize(config.trav_map.dims()*config.trav_map.dims(), TRAVERSABLE);
     }
 
     bool HazardDetector::analyze(std::vector<float> &distImage, std::pair<uint16_t, uint16_t> distDims, cv::Mat &visualImage)
@@ -17,6 +21,10 @@ namespace hazard_detector
 
         //const uint16_t distHeight = distDims.first;
         const uint16_t distWidth  = distDims.second;
+
+        // reset traversability map
+        trav_map.clear();
+        trav_map.resize(config.trav_map.dims()*config.trav_map.dims(), TRAVERSABLE);
 
         for (int i=config.mask.minY; i < visualImage.rows && i < config.mask.maxY; i++)
         {
@@ -35,12 +43,16 @@ namespace hazard_detector
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 180;
                     pixelPtr[i*visualImage.cols*cn + j*cn + 1] = origGreenValue;
 
+                    registerHazard(i,j);
+
                     hazardPixels++;
                 }
                 // mark objects/pixels which are Xcm further away than calibration
                 if (distImage[i*distWidth + j] > (calibration[i][j] + config.tolerance))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 2] = 180;
+
+                    registerHazard(i,j);
 
                     hazardPixels++;
                 }
@@ -120,5 +132,39 @@ namespace hazard_detector
     bool HazardDetector::isCalibrated()
     {
         return calibrated;
+    }
+
+    bool HazardDetector::registerHazard(int row, int col)
+    {
+        int n_rows = config.mask.maxY - config.mask.minY;
+        int n_cols = config.mask.maxX - config.mask.minX;
+
+        row -= config.mask.minY;
+        col -= config.mask.minX;
+
+        double scaling_r = (config.dist_to_upper_edge - config.dist_to_bottom_edge)/(double)n_rows;
+        double scaling_c = (fabs(config.dist_to_left_edge)   + fabs(config.dist_to_right_edge))/(double)n_cols;
+
+        // find indices, pretending rover is at (0,0)
+        int ind_r = (int)( ( -config.dist_to_bottom_edge + row*scaling_r ) / config.trav_map.resolution );
+        int ind_c = (int)( (  config.dist_to_left_edge   + col*scaling_c ) / config.trav_map.resolution );
+
+        // move reference rover to the center of the traversability map
+        ind_r += config.trav_map.dims() / 2;
+        ind_c += config.trav_map.dims() / 2;
+
+        trav_map[ind_r*config.trav_map.dims() + ind_c] = HAZARD;
+
+        return true;
+    }
+
+    const std::vector<uint8_t>& HazardDetector::getTraversabilityMap()
+    {
+        return trav_map;
+    }
+
+    int HazardDetector::getTravMapDims()
+    {
+        return config.trav_map.dims();
     }
 }
