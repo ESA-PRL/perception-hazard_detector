@@ -49,7 +49,7 @@ namespace hazard_detector
 
     struct Config
     {
-        double tolerance;       // [m]
+        double tolerance_close, tolerance_far;       // [m]
         Mask mask;              // area of interest
         int hazardPixelLimit;   // if less than this many pixels
                                 // are considered hazardous, we consider them spurious

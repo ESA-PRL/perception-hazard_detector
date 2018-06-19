@@ -6,7 +6,7 @@ namespace hazard_detector
     HazardDetector::HazardDetector(const Config& nConfig)
         : config(nConfig), calibrated(false)
     {
-        HAZARD = 1;
+        HAZARD = 255;
         TRAVERSABLE = 0;
 
         trav_map.resize(config.trav_map.dims()*config.trav_map.dims(), TRAVERSABLE);
@@ -38,7 +38,7 @@ namespace hazard_detector
                 }
 
                 // mark objects/pixels which are Xcm closer than calibration
-                if (distImage[i*distWidth + j] < (calibration[i][j] - config.tolerance))
+                if (distImage[i*distWidth + j] < (calibration[i][j] - config.tolerance_close))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 180;
                     pixelPtr[i*visualImage.cols*cn + j*cn + 1] = origGreenValue;
@@ -48,7 +48,7 @@ namespace hazard_detector
                     hazardPixels++;
                 }
                 // mark objects/pixels which are Xcm further away than calibration
-                if (distImage[i*distWidth + j] > (calibration[i][j] + config.tolerance))
+                if (distImage[i*distWidth + j] > (calibration[i][j] + config.tolerance_far))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 2] = 180;
 
