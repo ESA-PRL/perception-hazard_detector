@@ -26,24 +26,14 @@ namespace hazard_detector
 
     struct TraversabilityMap
     {
-        double size; // length of one side of the square trav. map [m]
-        double resolution; // [m^2/cell]
+        double width, height; // dimensions of traversability map [m]
+        double resolution;
 
-        TraversabilityMap(double size, double resolution)
+        TraversabilityMap(double width, double height, double resolution)
         {
             this->resolution = resolution;
-            this->size = size;
-        }
-
-        int dims()
-        {
-            int ret = (int)(size/resolution);
-            if (ret % 2 == 0)
-            {
-                ret += 1;
-                size = ret * resolution;
-            }
-            return ret;
+            this->width = width;
+            this->height = height;
         }
     };
 
@@ -75,7 +65,7 @@ namespace hazard_detector
         Config()
             :
             mask(50,950,350,750),
-            trav_map(5,0.1)
+            trav_map(5,5,0.1)
         {
         }
     };

@@ -9,7 +9,7 @@ namespace hazard_detector
         HAZARD = 255;
         TRAVERSABLE = 0;
 
-        trav_map.resize(config.trav_map.dims()*config.trav_map.dims(), TRAVERSABLE);
+        trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
     }
 
     bool HazardDetector::analyze(std::vector<float> &distImage, std::pair<uint16_t, uint16_t> distDims, cv::Mat &visualImage)
@@ -24,7 +24,7 @@ namespace hazard_detector
 
         // reset traversability map
         trav_map.clear();
-        trav_map.resize(config.trav_map.dims()*config.trav_map.dims(), TRAVERSABLE);
+        trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
         for (int i=config.mask.minY; i < visualImage.rows && i < config.mask.maxY; i++)
         {
@@ -155,10 +155,10 @@ namespace hazard_detector
         int ind_c = (int)( (  config.dist_to_left_edge   + col*scaling_c ) / config.trav_map.resolution );
 
         // move reference rover to the center of the traversability map
-        ind_r += config.trav_map.dims() / 2;
-        ind_c += config.trav_map.dims() / 2;
+        ind_r += getTravMapHeight() / 2;
+        ind_c += getTravMapWidth() / 2;
 
-        trav_map[ind_r*config.trav_map.dims() + ind_c] = HAZARD;
+        trav_map[ind_r*getTravMapWidth() + ind_c] = HAZARD;
 
         return true;
     }
@@ -168,8 +168,15 @@ namespace hazard_detector
         return trav_map;
     }
 
-    int HazardDetector::getTravMapDims()
+    int HazardDetector::getTravMapWidth()
     {
-        return config.trav_map.dims();
+        int width = (int)(config.trav_map.width/config.trav_map.resolution);
+        return width + 1 - width%2;
+    }
+
+    int HazardDetector::getTravMapHeight()
+    {
+        int height = (int)(config.trav_map.height/config.trav_map.resolution);
+        return height + 1 - height%2;
     }
 }

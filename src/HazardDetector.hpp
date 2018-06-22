@@ -30,7 +30,8 @@ namespace hazard_detector
             bool saveCalibrationFile( std::string path );
             bool isCalibrated();
             const std::vector<uint8_t> &getTraversabilityMap();
-            int getTravMapDims();
+            int getTravMapWidth();
+            int getTravMapHeight();
 
             uint8_t HAZARD;
             uint8_t TRAVERSABLE;
