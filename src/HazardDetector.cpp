@@ -30,31 +30,37 @@ namespace hazard_detector
         {
             for (int j=config.mask.minX; j < visualImage.cols && j < config.mask.maxX; j++)
             {
-                int origGreenValue = pixelPtr[i*visualImage.cols*cn + j*cn + 1];
+                int original_green_value = pixelPtr[i*visualImage.cols*cn + j*cn + 1];
+
+                float distance = distImage[i*distWidth + j];
+                float calibration_distance = calibration[i][j];
+
+                // reject artifacts and invalid regions
+                if (std::isnan(calibration_distance) || std::isnan(distance) || distance <= 0.0)
+                    continue;
+
                 // mark everything under consideration green
-                if (!std::isnan(calibration[i][j]))
-                {
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 0] /= 1.1;
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 255;
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 2] /= 1.1;
-                }
+                pixelPtr[i*visualImage.cols*cn + j*cn + 0] /= 1.1;
+                pixelPtr[i*visualImage.cols*cn + j*cn + 1] = 255;
+                pixelPtr[i*visualImage.cols*cn + j*cn + 2] /= 1.1;
 
                 // mark objects/pixels which are Xcm closer than calibration
-                if (distImage[i*distWidth + j] < (calibration[i][j] - config.tolerance_close))
+                if (distance < (calibration_distance - config.tolerance_close))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] = 255;
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = origGreenValue;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = original_green_value;
                     pixelPtr[i*visualImage.cols*cn + j*cn + 2] /= 1.5;
 
                     registerHazard(i,j);
 
                     hazardPixels++;
                 }
+
                 // mark objects/pixels which are Xcm further away than calibration
-                if (distImage[i*distWidth + j] > (calibration[i][j] + config.tolerance_far))
+                if (distance > (calibration_distance + config.tolerance_far))
                 {
                     pixelPtr[i*visualImage.cols*cn + j*cn + 0] /= 1.5;
-                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = origGreenValue;
+                    pixelPtr[i*visualImage.cols*cn + j*cn + 1] = original_green_value;
                     pixelPtr[i*visualImage.cols*cn + j*cn + 2] = 255;
 
                     registerHazard(i,j);
