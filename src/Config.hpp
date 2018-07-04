@@ -9,18 +9,18 @@ namespace hazard_detector
 {
     struct Mask
     {
-        int minX;
-        int maxX;
-        int minY;
-        int maxY;
+        int min_x;
+        int max_x;
+        int min_y;
+        int max_y;
 
         // choose values of -1 to select min/max derived from image
-        Mask(int minX, int maxX, int minY, int maxY)
+        Mask(int min_x, int max_x, int min_y, int max_y)
         {
-            this->minX = minX; // x=0 is on the left
-            this->maxX = maxX;
-            this->minY = minY; // y=0 is in the top
-            this->maxY = maxY;
+            this->min_x = min_x; // x=0 is on the left
+            this->max_x = max_x;
+            this->min_y = min_y; // y=0 is in the top
+            this->max_y = max_y;
         }
     };
 
@@ -39,13 +39,13 @@ namespace hazard_detector
 
     struct Config
     {
-        double tolerance_close, tolerance_far;       // [m]
+        double tolerance_close, tolerance_far; // [m]
         Mask mask;              // area of interest
-        int hazardPixelLimit;   // if less than this many pixels
+        int hazard_pixel_limit; // if less than this many pixels
                                 // are considered hazardous, we consider them spurious
-        std::string calibrationPath;
-        bool newCalibration;
-        int numCalibrationSamples;
+        std::string calibration_path;
+        bool new_calibration;
+        int num_calibration_samples;
 
         TraversabilityMap trav_map;
 
