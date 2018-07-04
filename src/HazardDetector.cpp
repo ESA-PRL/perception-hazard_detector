@@ -140,7 +140,7 @@ bool HazardDetector::saveCalibrationFile( std::string path )
     return true;
 }
 
-bool HazardDetector::isCalibrated()
+bool HazardDetector::isCalibrated() const
 {
     return calibrated;
 }
@@ -169,19 +169,29 @@ bool HazardDetector::registerHazard(int row, int col)
     return true;
 }
 
-const std::vector<uint8_t>& HazardDetector::getTraversabilityMap()
+std::vector<uint8_t> const& HazardDetector::getTraversabilityMap()
 {
     return trav_map;
 }
 
-int HazardDetector::getTravMapWidth()
+int HazardDetector::getTravMapWidth() const
 {
     int width = (int)(config.trav_map.width/config.trav_map.resolution);
     return width + 1 - width%2;
 }
 
-int HazardDetector::getTravMapHeight()
+int HazardDetector::getTravMapHeight() const
 {
     int height = (int)(config.trav_map.height/config.trav_map.resolution);
     return height + 1 - height%2;
+}
+
+uint8_t HazardDetector::getValueForHazard() const
+{
+    return HAZARD;
+}
+
+uint8_t HazardDetector::getValueForTraversable() const
+{
+    return TRAVERSABLE;
 }
