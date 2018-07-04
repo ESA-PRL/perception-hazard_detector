@@ -1,5 +1,4 @@
 #include "HazardDetector.hpp"
-#include <iostream>
 
 using namespace hazard_detector;
 

@@ -1,15 +1,17 @@
 #ifndef _HAZARD_DETECTOR_HPP_
 #define _HAZARD_DETECTOR_HPP_
 
-#include <hazard_detector/Config.hpp>
-#include <vector>
-#include <stdint.h>
-#include <sstream>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <opencv2/opencv.hpp>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdint.h>
+#include <string>
+#include <vector>
+
+#include <opencv2/opencv.hpp>
+
+#include <hazard_detector/Config.hpp>
 
 namespace hazard_detector
 {
