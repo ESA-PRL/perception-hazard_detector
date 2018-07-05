@@ -44,12 +44,15 @@ namespace hazard_detector
             std::vector< std::vector<float> > calibration;
             bool calibrated;
             std::vector<uint8_t> trav_map;
+            cv::Mat transformation_matrix;
+            bool found_transformation_matrix;
 
             uint8_t HAZARD;
             uint8_t TRAVERSABLE;
 
             bool calculateMask();
-            bool registerHazard(int,int);
+            cv::Point2f distancesToMapCoordinates(const double x, const double y) const;
+            void computeTransformationMatrix();
     };
 
 }

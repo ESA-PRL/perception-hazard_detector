@@ -50,7 +50,7 @@ namespace hazard_detector
 
         // if less than this many pixels are considered hazardous,
         // we consider them spurious
-        int hazard_pixel_limit;
+        unsigned int hazard_pixel_limit;
 
         std::string calibration_path;
         bool new_calibration;
@@ -73,10 +73,14 @@ namespace hazard_detector
         // region of interest in meters.
         // These values are needed to create a
         // traversability map.
-        double dist_to_left_edge;
-        double dist_to_right_edge;
-        double dist_to_bottom_edge;
-        double dist_to_upper_edge;
+        double dist_to_upper_left_x;
+        double dist_to_upper_left_y;
+        double dist_to_upper_right_x;
+        double dist_to_upper_right_y;
+        double dist_to_bottom_right_x;
+        double dist_to_bottom_right_y;
+        double dist_to_bottom_left_x;
+        double dist_to_bottom_left_y;
 
         Config()
             :

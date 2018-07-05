@@ -8,15 +8,27 @@ HazardDetector::HazardDetector(const Config& nConfig)
     HAZARD = 255;
     TRAVERSABLE = 0;
 
+    found_transformation_matrix = false;
+
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 }
 
 bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t, uint16_t> dist_dims, cv::Mat &visual_image)
 {
+    if (!isCalibrated())
+    {
+        return false;
+    }
+
+    if (!found_transformation_matrix)
+    {
+        computeTransformationMatrix();
+    }
+
     int cn = visual_image.channels();
     uint8_t* pixelPtr = (uint8_t*)visual_image.data;
 
-    int num_hazard_pixels = 0;
+    std::vector<cv::Point2f> hazard_points;
 
     //const uint16_t distHeight = dist_dims.first;
     const uint16_t dist_width  = dist_dims.second;
@@ -50,9 +62,7 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
                 pixelPtr[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
                 pixelPtr[i*visual_image.cols*cn + j*cn + 2] /= 1.5;
 
-                registerHazard(i,j);
-
-                num_hazard_pixels++;
+                hazard_points.push_back(cv::Point2f(j,i));
             }
 
             // mark objects/pixels which are Xcm further away than calibration
@@ -62,21 +72,26 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
                 pixelPtr[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
                 pixelPtr[i*visual_image.cols*cn + j*cn + 2] = 255;
 
-                //registerHazard(i,j);
-
-                //num_hazard_pixels++;
+                hazard_points.push_back(cv::Point2f(j,i));
             }
         }
     }
 
-    // spurious hazard?
-    if (num_hazard_pixels >= config.hazard_pixel_limit)
+    // hazard area big enough? then transform hazard pixel coordinates to trav_map coordinates
+    if (hazard_points.size() >= config.hazard_pixel_limit)
+    {
+        cv::perspectiveTransform(hazard_points, hazard_points, transformation_matrix);
+        for (cv::Point2f p : hazard_points)
+        {
+            trav_map[static_cast<int>(p.y)*getTravMapWidth() + static_cast<int>(p.x)] = HAZARD;
+        }
         return true;
+    }
 
     return false;
 }
 
-bool HazardDetector::setCalibration( std::vector< std::vector<float> > calibration )
+bool HazardDetector::setCalibration(std::vector< std::vector<float> > calibration)
 {
     this->calibration = calibration;
     return calculateMask();
@@ -109,8 +124,8 @@ bool HazardDetector::calculateMask()
         return false;
 
     // if config.mask.* == -1, derive min/max from the distance image/calibration
-    config.mask.max_x = config.mask.max_x < 0 ? (int)(calibration[0].size()) : config.mask.max_x;
-    config.mask.max_y = config.mask.max_y < 0 ? (int)(calibration.size())    : config.mask.max_y;
+    config.mask.max_x = config.mask.max_x < 0 ? static_cast<int>(calibration[0].size()) : config.mask.max_x;
+    config.mask.max_y = config.mask.max_y < 0 ? static_cast<int>(calibration.size())    : config.mask.max_y;
     config.mask.min_x = std::max(config.mask.min_x, 0);
     config.mask.min_y = std::max(config.mask.min_y, 0);
 
@@ -144,30 +159,6 @@ bool HazardDetector::isCalibrated() const
     return calibrated;
 }
 
-bool HazardDetector::registerHazard(int row, int col)
-{
-    int n_rows = config.mask.max_y - config.mask.min_y;
-    int n_cols = config.mask.max_x - config.mask.min_x;
-
-    row -= config.mask.min_y;
-    col -= config.mask.min_x;
-
-    double scaling_r = (config.dist_to_upper_edge - config.dist_to_bottom_edge)/(double)n_rows;
-    double scaling_c = (fabs(config.dist_to_left_edge) + fabs(config.dist_to_right_edge))/(double)n_cols;
-
-    // find indices, pretending rover is at (0,0)
-    int ind_r = (int)( ( -config.dist_to_bottom_edge + row*scaling_r ) / config.trav_map.resolution );
-    int ind_c = (int)( (  config.dist_to_left_edge   + col*scaling_c ) / config.trav_map.resolution );
-
-    // move reference rover to the center of the traversability map
-    ind_r += getTravMapHeight() / 2;
-    ind_c += getTravMapWidth() / 2;
-
-    trav_map[ind_r*getTravMapWidth() + ind_c] = HAZARD;
-
-    return true;
-}
-
 std::vector<uint8_t> const& HazardDetector::getTraversabilityMap()
 {
     return trav_map;
@@ -175,13 +166,13 @@ std::vector<uint8_t> const& HazardDetector::getTraversabilityMap()
 
 int HazardDetector::getTravMapWidth() const
 {
-    int width = (int)(config.trav_map.width/config.trav_map.resolution);
+    int width = static_cast<int>(config.trav_map.width/config.trav_map.resolution);
     return width + 1 - width%2;
 }
 
 int HazardDetector::getTravMapHeight() const
 {
-    int height = (int)(config.trav_map.height/config.trav_map.resolution);
+    int height = static_cast<int>(config.trav_map.height/config.trav_map.resolution);
     return height + 1 - height%2;
 }
 
@@ -193,4 +184,36 @@ uint8_t HazardDetector::getValueForHazard() const
 uint8_t HazardDetector::getValueForTraversable() const
 {
     return TRAVERSABLE;
+}
+
+void HazardDetector::computeTransformationMatrix()
+{
+    cv::Point2f src[4];
+    cv::Point2f dst[4];
+
+    src[0].x = config.mask.min_x;
+    src[0].y = config.mask.min_y;
+    src[1].x = config.mask.max_x;
+    src[1].y = config.mask.min_y;
+    src[2].x = config.mask.max_x;
+    src[2].y = config.mask.max_y;
+    src[3].x = config.mask.min_x;
+    src[3].y = config.mask.max_y;
+
+    dst[0] = distancesToMapCoordinates(config.dist_to_upper_left_x,   config.dist_to_upper_left_y);
+    dst[1] = distancesToMapCoordinates(config.dist_to_upper_right_x,  config.dist_to_upper_right_y);
+    dst[2] = distancesToMapCoordinates(config.dist_to_bottom_right_x, config.dist_to_bottom_right_y);
+    dst[3] = distancesToMapCoordinates(config.dist_to_bottom_left_x,  config.dist_to_bottom_left_y);
+
+    transformation_matrix = cv::getPerspectiveTransform(src, dst);
+
+    found_transformation_matrix = true;
+}
+
+cv::Point2f HazardDetector::distancesToMapCoordinates(const double x, const double y) const
+{
+    cv::Point2f p;
+    p.x = x/config.trav_map.resolution + getTravMapWidth()/2.0;
+    p.y = -y/config.trav_map.resolution + getTravMapHeight()/2.0;
+    return p;
 }
