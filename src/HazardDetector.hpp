@@ -22,9 +22,9 @@ namespace hazard_detector
 
             bool analyze
                 (
-                    std::vector<float>& distance_image,
-                    std::pair<uint16_t,uint16_t> distance_dims,
-                    cv::Mat& visual_image
+                    const std::vector<float>& distance_image,
+                    const std::pair<uint16_t,uint16_t> distance_dims,
+                    const cv::Mat& visual_image
                 );
 
             bool setCalibration(std::vector< std::vector<float> > calibration);

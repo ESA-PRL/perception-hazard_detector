@@ -13,7 +13,7 @@ HazardDetector::HazardDetector(const Config& nConfig)
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 }
 
-bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t, uint16_t> dist_dims, cv::Mat &visual_image)
+bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pair<uint16_t, uint16_t> dist_dims, const cv::Mat& visual_image)
 {
     if (!isCalibrated())
     {
@@ -26,12 +26,11 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
     }
 
     int cn = visual_image.channels();
-    uint8_t* pixelPtr = (uint8_t*)visual_image.data;
+    uint8_t* image_data = static_cast<uint8_t*>(visual_image.data);
 
     std::vector<cv::Point2f> hazard_points;
 
-    //const uint16_t distHeight = dist_dims.first;
-    const uint16_t dist_width  = dist_dims.second;
+    const uint16_t dist_width = dist_dims.second;
 
     // reset traversability map
     trav_map.clear();
@@ -41,8 +40,7 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
     {
         for (int j=config.mask.min_x; j < visual_image.cols && j < config.mask.max_x; j++)
         {
-            int original_green_value = pixelPtr[i*visual_image.cols*cn + j*cn + 1];
-
+            int original_green_value = image_data[i*visual_image.cols*cn + j*cn + 1];
             float distance = dist_image[i*dist_width + j];
             float calibration_distance = calibration[i][j];
 
@@ -51,16 +49,16 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
                 continue;
 
             // mark everything under consideration green
-            pixelPtr[i*visual_image.cols*cn + j*cn + 0] /= 1.1;
-            pixelPtr[i*visual_image.cols*cn + j*cn + 1] = 255;
-            pixelPtr[i*visual_image.cols*cn + j*cn + 2] /= 1.1;
+            image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.1;
+            image_data[i*visual_image.cols*cn + j*cn + 1] = 255;
+            image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.1;
 
             // mark objects/pixels which are Xcm closer than calibration
             if (distance < (calibration_distance - config.tolerance_close))
             {
-                pixelPtr[i*visual_image.cols*cn + j*cn + 0] = 255;
-                pixelPtr[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
-                pixelPtr[i*visual_image.cols*cn + j*cn + 2] /= 1.5;
+                image_data[i*visual_image.cols*cn + j*cn + 0] = 255;
+                image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
+                image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.5;
 
                 hazard_points.push_back(cv::Point2f(j,i));
             }
@@ -68,9 +66,9 @@ bool HazardDetector::analyze(std::vector<float> &dist_image, std::pair<uint16_t,
             // mark objects/pixels which are Xcm further away than calibration
             if (distance > (calibration_distance + config.tolerance_far))
             {
-                pixelPtr[i*visual_image.cols*cn + j*cn + 0] /= 1.5;
-                pixelPtr[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
-                pixelPtr[i*visual_image.cols*cn + j*cn + 2] = 255;
+                image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.5;
+                image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
+                image_data[i*visual_image.cols*cn + j*cn + 2] = 255;
 
                 hazard_points.push_back(cv::Point2f(j,i));
             }
