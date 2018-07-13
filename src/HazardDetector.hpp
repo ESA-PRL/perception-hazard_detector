@@ -39,6 +39,12 @@ namespace hazard_detector
             uint8_t getValueForHazard() const;
             uint8_t getValueForTraversable() const;
 
+            // these three functions can be used to ignore part of the RoI
+            // in case we want to avoid an obstacle in Ackermann mode
+            void ignoreLeftSide();
+            void ignoreRightSide();
+            void ignoreNothing();
+
         protected:
             Config config;
             std::vector< std::vector<float> > calibration;
@@ -46,6 +52,13 @@ namespace hazard_detector
             std::vector<uint8_t> trav_map;
             cv::Mat transformation_matrix;
             bool found_transformation_matrix;
+
+            // used to adjust which part of the RoI we consider
+            // via, e.g., ignoreLeftSide()
+            int left_most_hazard;
+            int right_most_hazard;
+            int min_x;
+            int max_x;
 
             uint8_t HAZARD;
             uint8_t TRAVERSABLE;

@@ -11,6 +11,11 @@ HazardDetector::HazardDetector(const Config& nConfig)
     found_transformation_matrix = false;
 
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
+
+    min_x = config.mask.min_x;
+    max_x = config.mask.max_x;
+    left_most_hazard = config.mask.min_x;
+    right_most_hazard = config.mask.max_x;
 }
 
 bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pair<uint16_t, uint16_t> dist_dims, const cv::Mat& visual_image)
@@ -36,9 +41,9 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
     trav_map.clear();
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
-    for (int i=config.mask.min_y; i < visual_image.rows && i < config.mask.max_y; i++)
+    for (int i = config.mask.min_y; i < visual_image.rows && i < config.mask.max_y; i++)
     {
-        for (int j=config.mask.min_x; j < visual_image.cols && j < config.mask.max_x; j++)
+        for (int j = min_x; j < visual_image.cols && j < max_x; j++)
         {
             int original_green_value = image_data[i*visual_image.cols*cn + j*cn + 1];
             float distance = dist_image[i*dist_width + j];
@@ -61,6 +66,8 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
                 image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.5;
 
                 hazard_points.push_back(cv::Point2f(j,i));
+                left_most_hazard = std::min(left_most_hazard, j);
+                right_most_hazard = std::max(right_most_hazard, j);
             }
 
             // mark objects/pixels which are Xcm further away than calibration
@@ -71,6 +78,8 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
                 image_data[i*visual_image.cols*cn + j*cn + 2] = 255;
 
                 hazard_points.push_back(cv::Point2f(j,i));
+                left_most_hazard = std::min(left_most_hazard, j);
+                right_most_hazard = std::max(right_most_hazard, j);
             }
         }
     }
@@ -214,4 +223,22 @@ cv::Point2f HazardDetector::distancesToMapCoordinates(const double x, const doub
     p.x = x/config.trav_map.resolution + getTravMapWidth()/2.0;
     p.y = -y/config.trav_map.resolution + getTravMapHeight()/2.0;
     return p;
+}
+
+void HazardDetector::ignoreLeftSide()
+{
+    min_x = left_most_hazard;
+    max_x = config.mask.max_x;
+}
+
+void HazardDetector::ignoreRightSide()
+{
+    min_x = config.mask.min_x;
+    max_x = right_most_hazard;
+}
+
+void HazardDetector::ignoreNothing()
+{
+    min_x = config.mask.min_x;
+    max_x = config.mask.max_x;
 }
