@@ -68,6 +68,9 @@ namespace hazard_detector
             bool calculateRegionOfInterest();
             cv::Point2f distancesToMapCoordinates(const double x, const double y) const;
             void computeTransformationMatrix();
+
+            float computeMinToleratedDistance(const float) const;
+            float computeMaxToleratedDistance(const float) const;
     };
 
 }

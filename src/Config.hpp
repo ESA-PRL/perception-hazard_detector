@@ -60,6 +60,8 @@ namespace hazard_detector
         double tolerance_close;
         double tolerance_far;
 
+        double camera_height;
+
         RegionOfInterest roi;
 
         TraversabilityMap trav_map;

@@ -59,7 +59,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
             image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.1;
 
             // mark objects/pixels which are Xcm closer than calibration
-            if (distance < (calibration_distance - config.tolerance_close))
+            if (distance < computeMinToleratedDistance(calibration_distance))
             {
                 image_data[i*visual_image.cols*cn + j*cn + 0] = 255;
                 image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
@@ -71,7 +71,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
             }
 
             // mark objects/pixels which are Xcm further away than calibration
-            if (distance > (calibration_distance + config.tolerance_far))
+            if (distance > computeMaxToleratedDistance(calibration_distance))
             {
                 image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.5;
                 image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
@@ -246,4 +246,16 @@ void HazardDetector::ignoreNothing()
 unsigned int HazardDetector::getHazardPixelLimit() const
 {
     return config.hazard_pixel_limit;
+}
+
+float HazardDetector::computeMinToleratedDistance(const float calibration_distance) const
+{
+    double cos_alpha = config.camera_height / calibration_distance;
+    return static_cast<float>((config.camera_height - config.tolerance_close) / cos_alpha);
+}
+
+float HazardDetector::computeMaxToleratedDistance(const float calibration_distance) const
+{
+    double cos_alpha = config.camera_height / calibration_distance;
+    return static_cast<float>((config.camera_height + config.tolerance_far) / cos_alpha);
 }
