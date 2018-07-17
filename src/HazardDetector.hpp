@@ -39,6 +39,8 @@ namespace hazard_detector
             uint8_t getValueForHazard() const;
             uint8_t getValueForTraversable() const;
 
+            unsigned int getHazardPixelLimit() const;
+
             // these three functions can be used to ignore part of the RoI
             // in case we want to avoid an obstacle in Ackermann mode
             void ignoreLeftSide();
@@ -63,7 +65,7 @@ namespace hazard_detector
             uint8_t HAZARD;
             uint8_t TRAVERSABLE;
 
-            bool calculateMask();
+            bool calculateRegionOfInterest();
             cv::Point2f distancesToMapCoordinates(const double x, const double y) const;
             void computeTransformationMatrix();
     };

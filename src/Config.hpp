@@ -7,17 +7,31 @@
 
 namespace hazard_detector
 {
-    struct Mask
+    struct RegionOfInterest
     {
         int min_x;
         int max_x;
         int min_y;
         int max_y;
 
+        // Distances from the rover's frame to the
+        // left/right/bottom/upper edge of the
+        // region of interest in meters.
+        // These values are needed to create a
+        // traversability map.
+        double dist_to_upper_left_x;
+        double dist_to_upper_left_y;
+        double dist_to_upper_right_x;
+        double dist_to_upper_right_y;
+        double dist_to_bottom_right_x;
+        double dist_to_bottom_right_y;
+        double dist_to_bottom_left_x;
+        double dist_to_bottom_left_y;
+
         // Choose values of -1 to select min/max derived from image.
         // x=0 is on the left
         // y=0 is in the top
-        Mask(int min_x, int max_x, int min_y, int max_y)
+        RegionOfInterest(const int min_x, const int max_x, const int min_y, const int max_y)
         {
             this->min_x = min_x;
             this->max_x = max_x;
@@ -43,48 +57,20 @@ namespace hazard_detector
     struct Config
     {
         // tolerances [m]
-        double tolerance_close, tolerance_far;
+        double tolerance_close;
+        double tolerance_far;
 
-        // region of interest
-        Mask mask;
-
-        // if less than this many pixels are considered hazardous,
-        // we consider them spurious
-        unsigned int hazard_pixel_limit;
-
-        std::string calibration_path;
-        bool new_calibration;
-        int num_calibration_samples;
+        RegionOfInterest roi;
 
         TraversabilityMap trav_map;
 
-        // number of frames to be taken into account when
-        // trying to filter out false positives
-        int num_frames_while_stopped;
-
-        // Out of num_frames_while_stopped many frames,
-        // a pixel has to be considered too far/close
-        // for at least hazard_threshold many times to be
-        // classified as an actual hazard
-        uint8_t hazard_threshold;
-
-        // Distances from the rover's frame to the
-        // left/right/bottom/upper edge of the
-        // region of interest in meters.
-        // These values are needed to create a
-        // traversability map.
-        double dist_to_upper_left_x;
-        double dist_to_upper_left_y;
-        double dist_to_upper_right_x;
-        double dist_to_upper_right_y;
-        double dist_to_bottom_right_x;
-        double dist_to_bottom_right_y;
-        double dist_to_bottom_left_x;
-        double dist_to_bottom_left_y;
+        // If less than this many pixels are considered hazardous,
+        // we consider them spurious.
+        unsigned int hazard_pixel_limit;
 
         Config()
             :
-            mask(50,950,350,750),
+            roi(50,950,350,750),
             trav_map(5,5,0.1)
         {
         }

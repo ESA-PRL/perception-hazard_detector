@@ -12,10 +12,10 @@ HazardDetector::HazardDetector(const Config& nConfig)
 
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
-    min_x = config.mask.min_x;
-    max_x = config.mask.max_x;
-    left_most_hazard = config.mask.min_x;
-    right_most_hazard = config.mask.max_x;
+    min_x = config.roi.min_x;
+    max_x = config.roi.max_x;
+    left_most_hazard = config.roi.min_x;
+    right_most_hazard = config.roi.max_x;
 }
 
 bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pair<uint16_t, uint16_t> dist_dims, const cv::Mat& visual_image)
@@ -41,7 +41,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
     trav_map.clear();
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
-    for (int i = config.mask.min_y; i < visual_image.rows && i < config.mask.max_y; i++)
+    for (int i = config.roi.min_y; i < visual_image.rows && i < config.roi.max_y; i++)
     {
         for (int j = min_x; j < visual_image.cols && j < max_x; j++)
         {
@@ -101,7 +101,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
 bool HazardDetector::setCalibration(std::vector< std::vector<float> > calibration)
 {
     this->calibration = calibration;
-    return calculateMask();
+    return calculateRegionOfInterest();
 }
 
 bool HazardDetector::readCalibrationFile( std::string path )
@@ -122,19 +122,19 @@ bool HazardDetector::readCalibrationFile( std::string path )
     }
     file.close();
 
-    return calculateMask();
+    return calculateRegionOfInterest();
 }
 
-bool HazardDetector::calculateMask()
+bool HazardDetector::calculateRegionOfInterest()
 {
     if (calibration.size() == 0 || calibration[0].size() == 0)
         return false;
 
-    // if config.mask.* == -1, derive min/max from the distance image/calibration
-    config.mask.max_x = config.mask.max_x < 0 ? static_cast<int>(calibration[0].size()) : config.mask.max_x;
-    config.mask.max_y = config.mask.max_y < 0 ? static_cast<int>(calibration.size())    : config.mask.max_y;
-    config.mask.min_x = std::max(config.mask.min_x, 0);
-    config.mask.min_y = std::max(config.mask.min_y, 0);
+    // if config.roi.* == -1, derive min/max from the distance image/calibration
+    config.roi.max_x = config.roi.max_x < 0 ? static_cast<int>(calibration[0].size()) : config.roi.max_x;
+    config.roi.max_y = config.roi.max_y < 0 ? static_cast<int>(calibration.size())    : config.roi.max_y;
+    config.roi.min_x = std::max(config.roi.min_x, 0);
+    config.roi.min_y = std::max(config.roi.min_y, 0);
 
     calibrated = true;
 
@@ -198,19 +198,19 @@ void HazardDetector::computeTransformationMatrix()
     cv::Point2f src[4];
     cv::Point2f dst[4];
 
-    src[0].x = config.mask.min_x;
-    src[0].y = config.mask.min_y;
-    src[1].x = config.mask.max_x;
-    src[1].y = config.mask.min_y;
-    src[2].x = config.mask.max_x;
-    src[2].y = config.mask.max_y;
-    src[3].x = config.mask.min_x;
-    src[3].y = config.mask.max_y;
+    src[0].x = config.roi.min_x;
+    src[0].y = config.roi.min_y;
+    src[1].x = config.roi.max_x;
+    src[1].y = config.roi.min_y;
+    src[2].x = config.roi.max_x;
+    src[2].y = config.roi.max_y;
+    src[3].x = config.roi.min_x;
+    src[3].y = config.roi.max_y;
 
-    dst[0] = distancesToMapCoordinates(config.dist_to_upper_left_x,   config.dist_to_upper_left_y);
-    dst[1] = distancesToMapCoordinates(config.dist_to_upper_right_x,  config.dist_to_upper_right_y);
-    dst[2] = distancesToMapCoordinates(config.dist_to_bottom_right_x, config.dist_to_bottom_right_y);
-    dst[3] = distancesToMapCoordinates(config.dist_to_bottom_left_x,  config.dist_to_bottom_left_y);
+    dst[0] = distancesToMapCoordinates(config.roi.dist_to_upper_left_x,   config.roi.dist_to_upper_left_y);
+    dst[1] = distancesToMapCoordinates(config.roi.dist_to_upper_right_x,  config.roi.dist_to_upper_right_y);
+    dst[2] = distancesToMapCoordinates(config.roi.dist_to_bottom_right_x, config.roi.dist_to_bottom_right_y);
+    dst[3] = distancesToMapCoordinates(config.roi.dist_to_bottom_left_x,  config.roi.dist_to_bottom_left_y);
 
     transformation_matrix = cv::getPerspectiveTransform(src, dst);
 
@@ -228,17 +228,22 @@ cv::Point2f HazardDetector::distancesToMapCoordinates(const double x, const doub
 void HazardDetector::ignoreLeftSide()
 {
     min_x = left_most_hazard;
-    max_x = config.mask.max_x;
+    max_x = config.roi.max_x;
 }
 
 void HazardDetector::ignoreRightSide()
 {
-    min_x = config.mask.min_x;
+    min_x = config.roi.min_x;
     max_x = right_most_hazard;
 }
 
 void HazardDetector::ignoreNothing()
 {
-    min_x = config.mask.min_x;
-    max_x = config.mask.max_x;
+    min_x = config.roi.min_x;
+    max_x = config.roi.max_x;
+}
+
+unsigned int HazardDetector::getHazardPixelLimit() const
+{
+    return config.hazard_pixel_limit;
 }
