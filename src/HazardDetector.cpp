@@ -59,7 +59,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
             image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.1;
 
             // mark objects/pixels which are Xcm closer than calibration
-            if (distance < computeMinToleratedDistance(calibration_distance))
+            if (distance < min_tolerated_distances[i][j])
             {
                 image_data[i*visual_image.cols*cn + j*cn + 0] = 255;
                 image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
@@ -71,7 +71,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
             }
 
             // mark objects/pixels which are Xcm further away than calibration
-            if (distance > computeMaxToleratedDistance(calibration_distance))
+            if (distance > max_tolerated_distances[i][j])
             {
                 image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.5;
                 image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
@@ -258,4 +258,29 @@ float HazardDetector::computeMaxToleratedDistance(const float calibration_distan
 {
     double cos_alpha = config.camera_height / calibration_distance;
     return static_cast<float>((config.camera_height + config.tolerance_far) / cos_alpha);
+}
+
+void HazardDetector::computeTolerances()
+{
+    if (!isCalibrated())
+    {
+        std::cerr << "ERROR in HAZARD DETECTOR is not calibrated yet, cannot compute tolerances!" << std::endl;
+        std::exit(-1);
+    }
+
+    min_tolerated_distances.resize(calibration.size(), std::vector<float>(calibration[0].size(),nanf("")));
+    max_tolerated_distances.resize(calibration.size(), std::vector<float>(calibration[0].size(),nanf("")));
+    for (int i = config.roi.min_y; i < config.roi.max_y; ++i)
+    {
+        for (int j = config.roi.min_x; j < config.roi.max_x; ++j)
+        {
+            float distance = calibration[i][j];
+
+            if (std::isnan(distance))
+                continue;
+
+            min_tolerated_distances[i][j] = computeMinToleratedDistance(distance);
+            max_tolerated_distances[i][j] = computeMaxToleratedDistance(distance);
+        }
+    }
 }

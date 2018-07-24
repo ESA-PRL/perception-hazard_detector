@@ -41,6 +41,8 @@ namespace hazard_detector
 
             unsigned int getHazardPixelLimit() const;
 
+            void computeTolerances();
+
             // these three functions can be used to ignore part of the RoI
             // in case we want to avoid an obstacle in Ackermann mode
             void ignoreLeftSide();
@@ -50,6 +52,8 @@ namespace hazard_detector
         protected:
             Config config;
             std::vector< std::vector<float> > calibration;
+            std::vector< std::vector<float> > max_tolerated_distances;
+            std::vector< std::vector<float> > min_tolerated_distances;
             bool calibrated;
             std::vector<uint8_t> trav_map;
             cv::Mat transformation_matrix;
