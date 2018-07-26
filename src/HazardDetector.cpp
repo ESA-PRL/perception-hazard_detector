@@ -30,7 +30,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
         computeTransformationMatrix();
     }
 
-    int cn = visual_image.channels();
+    int channels = visual_image.channels();
     uint8_t* image_data = static_cast<uint8_t*>(visual_image.data);
 
     std::vector<cv::Point2f> hazard_points;
@@ -41,11 +41,12 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
     trav_map.clear();
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
-    for (int i = config.roi.min_y; i < visual_image.rows && i < config.roi.max_y; i++)
+    for (int i = config.roi.min_y; i < visual_image.rows && i < config.roi.max_y; ++i)
     {
-        for (int j = min_x; j < visual_image.cols && j < max_x; j++)
+        for (int j = min_x; j < visual_image.cols && j < max_x; ++j)
         {
-            int original_green_value = image_data[i*visual_image.cols*cn + j*cn + 1];
+            int index = i*visual_image.cols*channels + j*channels;
+            int original_green_value = image_data[index + 1];
             float distance = dist_image[i*dist_width + j];
             float calibration_distance = calibration[i][j];
 
@@ -54,16 +55,16 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
                 continue;
 
             // mark everything under consideration green
-            image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.1;
-            image_data[i*visual_image.cols*cn + j*cn + 1] = 255;
-            image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.1;
+            image_data[index + 0] /= 1.1;
+            image_data[index + 1] = 255;
+            image_data[index + 2] /= 1.1;
 
             // mark objects/pixels which are Xcm closer than calibration
             if (distance < min_tolerated_distances[i][j])
             {
-                image_data[i*visual_image.cols*cn + j*cn + 0] = 255;
-                image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
-                image_data[i*visual_image.cols*cn + j*cn + 2] /= 1.5;
+                image_data[index + 0] = 255;
+                image_data[index + 1] = original_green_value;
+                image_data[index + 2] /= 1.5;
 
                 hazard_points.push_back(cv::Point2f(j,i));
                 left_most_hazard = std::min(left_most_hazard, j);
@@ -73,9 +74,9 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
             // mark objects/pixels which are Xcm further away than calibration
             if (distance > max_tolerated_distances[i][j])
             {
-                image_data[i*visual_image.cols*cn + j*cn + 0] /= 1.5;
-                image_data[i*visual_image.cols*cn + j*cn + 1] = original_green_value;
-                image_data[i*visual_image.cols*cn + j*cn + 2] = 255;
+                image_data[index + 0] /= 1.5;
+                image_data[index + 1] = original_green_value;
+                image_data[index + 2] = 255;
 
                 hazard_points.push_back(cv::Point2f(j,i));
                 left_most_hazard = std::min(left_most_hazard, j);
@@ -104,7 +105,7 @@ bool HazardDetector::setCalibration(std::vector< std::vector<float> > calibratio
     return calculateRegionOfInterest();
 }
 
-bool HazardDetector::readCalibrationFile( std::string path )
+bool HazardDetector::readCalibrationFile(std::string path)
 {
     std::ifstream file(path);
 
@@ -147,9 +148,9 @@ bool HazardDetector::saveCalibrationFile( std::string path )
     if (!file)
         return false;
 
-    for (unsigned int i=0; i < calibration.size(); i++)
+    for (unsigned int i=0; i < calibration.size(); ++i)
     {
-        for (unsigned int j=0; j < calibration[0].size(); j++)
+        for (unsigned int j=0; j < calibration[0].size(); ++j)
         {
             file << calibration[i][j] << ",";
         }
