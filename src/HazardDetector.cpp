@@ -8,8 +8,6 @@ HazardDetector::HazardDetector(const Config& nConfig)
     HAZARD = 255;
     TRAVERSABLE = 0;
 
-    found_transformation_matrix = false;
-
     trav_map.resize(getTravMapWidth()*getTravMapHeight(), TRAVERSABLE);
 
     min_x = config.roi.min_x;
@@ -25,10 +23,7 @@ bool HazardDetector::analyze(const std::vector<float>& dist_image, const std::pa
         return false;
     }
 
-    if (!found_transformation_matrix)
-    {
-        computeTransformationMatrix();
-    }
+    computeTransformationMatrix();
 
     int channels = visual_image.channels();
     uint8_t* image_data = static_cast<uint8_t*>(visual_image.data);
@@ -196,6 +191,11 @@ uint8_t HazardDetector::getValueForTraversable() const
 
 void HazardDetector::computeTransformationMatrix()
 {
+    static bool already_computed = false;
+
+    if (already_computed)
+        return;
+
     cv::Point2f src[4];
     cv::Point2f dst[4];
 
@@ -215,7 +215,7 @@ void HazardDetector::computeTransformationMatrix()
 
     transformation_matrix = cv::getPerspectiveTransform(src, dst);
 
-    found_transformation_matrix = true;
+    already_computed = true;
 }
 
 cv::Point2f HazardDetector::distancesToMapCoordinates(const double x, const double y) const

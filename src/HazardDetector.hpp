@@ -57,7 +57,6 @@ namespace hazard_detector
             bool calibrated;
             std::vector<uint8_t> trav_map;
             cv::Mat transformation_matrix;
-            bool found_transformation_matrix;
 
             // used to adjust which part of the RoI we consider
             // via, e.g., ignoreLeftSide()
