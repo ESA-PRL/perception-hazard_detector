@@ -17,4 +17,3 @@ find_package(Rock)
 rock_init(hazard_detector 0.1)
 rock_standard_layout()
 set (CMAKE_CXX_STANDARD 11)
-

@@ -1,3 +1,3 @@
-rock_testsuite(test_suite suite.cpp
-   test_Dummy.cpp
-   DEPS hazard_detection)
+rock_testsuite(test_suite
+   test.cpp
+   DEPS hazard_detector)
