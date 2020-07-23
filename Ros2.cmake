@@ -1,7 +1,5 @@
 project(hazard_detector)
 
-add_definitions(-DROS2)
-
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -13,7 +11,6 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -21,12 +18,13 @@ find_package(OpenCV REQUIRED)
 add_library(${PROJECT_NAME} STATIC src/HazardDetector.cpp)
 
 # specify include paths and dependencies
-target_include_directories(${PROJECT_NAME} PRIVATE src PRIVATE include)
-ament_target_dependencies(${PROJECT_NAME} rclcpp OpenCV)
+target_include_directories(${PROJECT_NAME} PRIVATE src)
+ament_target_dependencies(${PROJECT_NAME} OpenCV)
 
 # copy public headers to destination
 install(
-  DIRECTORY include/
+  FILES src/Config.hpp
+        src/HazardDetector.hpp
   DESTINATION include
 )
 

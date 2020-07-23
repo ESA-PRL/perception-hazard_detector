@@ -11,7 +11,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <hazard_detector/Config.hpp>
+#include <Config.hpp>
 
 namespace hazard_detector
 {

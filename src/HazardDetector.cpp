@@ -1,4 +1,4 @@
-#include "hazard_detector/HazardDetector.hpp"
+#include "HazardDetector.hpp"
 
 using namespace hazard_detector;
 
